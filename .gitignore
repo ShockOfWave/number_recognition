@@ -169,3 +169,15 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# lightning logs
+lightning_logs/
+
+# wandb
+wandb/
+
+# data
+/data
+
+# model
+/checkpoints

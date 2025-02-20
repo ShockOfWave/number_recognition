@@ -10,7 +10,54 @@ from src.utils.paths import get_project_path
 
 
 class CRNNDataset(Dataset):
+    """
+    A dataset class for handling data from a CSV file for CRNN (Convolutional Recurrent Neural Network) models.
+
+    Methods:
+        __init__:
+            Initializes the object with data from a CSV file and optional transformation and character to index mapping.
+
+            Args:
+                self: The object itself.
+                csv_file (str): The path to the CSV file containing the data.
+                transform (callable, optional): A function for data transformation. Defaults to None.
+                char_to_idx (dict, optional): A mapping of characters to their corresponding indices. Defaults to None.
+
+            Returns:
+                None: This method does not return anything.
+
+        __len__:
+            Returns the length of the data.
+
+            Args:
+                self: The object itself.
+
+            Returns:
+                int: The length of the data.
+
+        __getitem__:
+            Retrieves the item at the specified index from the dataset.
+
+            Args:
+                self: The CRNNTestDataset instance.
+                idx (int): The index of the item to retrieve.
+
+            Returns:
+                Tuple[Image, torch.Tensor, str]: A tuple containing the image, target tensor, and label string.
+    """
     def __init__(self, csv_file, transform=None, char_to_idx=None):
+        """
+        Initializes the object with data from a CSV file and optional transformation and character to index mapping.
+
+        Args:
+            self: The object itself.
+            csv_file (str): The path to the CSV file containing the data.
+            transform (callable, optional): A function for data transformation. Defaults to None.
+            char_to_idx (dict, optional): A mapping of characters to their corresponding indices. Defaults to None.
+
+        Returns:
+            None: This method does not return anything.
+        """
         self.data = pd.read_csv(csv_file)
         self.transform = transform
         if char_to_idx is None:
@@ -18,9 +65,28 @@ class CRNNDataset(Dataset):
         self.char_to_idx = char_to_idx
 
     def __len__(self):
+        """
+    Returns the length of the data.
+
+    Args:
+        self: The object itself.
+
+    Returns:
+        int: The length of the data.
+    """
         return len(self.data)
 
     def __getitem__(self, idx):
+        """
+    Retrieves the item at the specified index from the dataset.
+
+    Args:
+        self: The CRNNTestDataset instance.
+        idx (int): The index of the item to retrieve.
+
+    Returns:
+        Tuple[Image, torch.Tensor, str]: A tuple containing the image, target tensor, and label string.
+    """
         row = self.data.iloc[idx]
         img_path = row['img_name']
         # Если метка хранится как float, приводим к int и затем к str
@@ -34,14 +100,67 @@ class CRNNDataset(Dataset):
 
 # Датасет для тестовой выборки
 class CRNNTestDataset(Dataset):
+    """
+    A dataset class for CRNN testing.
+
+    Class Methods:
+    - __init__: Initializes the object with the given CSV file.
+        Args:
+            self: The object itself.
+            csv_file (str): The path to the CSV file.
+        Returns:
+            None
+
+    - __len__: Returns the length of the data.
+        Args:
+            self: The object instance.
+        Returns:
+            int: The length of the data.
+
+    - __getitem__: Retrieves the item at the specified index.
+        Args:
+            self: The instance of the class.
+            idx (int): The index of the item to retrieve.
+        Returns:
+            None: The method returns the item at the specified index.
+    """
     def __init__(self, csv_file, transform=None):
+        """
+        Initializes the object with the given CSV file.
+
+        Args:
+            self: The object itself.
+            csv_file (str): The path to the CSV file.
+
+        Returns:
+            None
+        """
         self.data = pd.read_csv(csv_file)
         self.transform = transform
 
     def __len__(self):
+        """
+    Returns the length of the data.
+
+    Args:
+        self: The object instance.
+
+    Returns:
+        int: The length of the data.
+    """
         return len(self.data)
 
     def __getitem__(self, idx):
+        """
+    Retrieves the item at the specified index.
+
+    Args:
+        self: The instance of the class.
+        idx (int): The index of the item to retrieve.
+
+    Returns:
+        None: The method returns the item at the specified index.
+    """
         row = self.data.iloc[idx]
         img_path = row['img_name']
         image = Image.open(os.path.join(get_project_path(), "data", "imgs", img_path)).convert('RGB')
@@ -59,7 +178,34 @@ def crnn_collate_fn(batch):
 
 # DataModule для Lightning
 class CRNNDataModule(pl.LightningDataModule):
+    """
+    A data module for handling the training, validation, and test data for a CRNN model.
+
+    Methods:
+        __init__: Initializes the object with the provided training, validation, and test CSV file paths,
+            training and validation data transformations, and character to index mapping.
+        setup: Initializes the datasets for validation and testing.
+        train_dataloader: Creates a data loader for training the model.
+        val_dataloader: Returns a DataLoader for validation data.
+        test_dataloader: Creates a test data loader.
+    """
     def __init__(self, train_csv, val_csv, test_csv, train_transform, val_transform, char_to_idx, batch_size=64, num_workers=16):
+        """
+    Initializes the object with the provided training, validation, and test CSV file paths,
+    training and validation data transformations, and character to index mapping.
+
+    Args:
+        self: The object itself.
+        train_csv (str): The file path to the training CSV file.
+        val_csv (str): The file path to the validation CSV file.
+        test_csv (str): The file path to the test CSV file.
+        train_transform (Any): The transformation to be applied to the training data.
+        val_transform (Any): The transformation to be applied to the validation data.
+        char_to_idx (Dict): The mapping of characters to their corresponding indices.
+
+    Returns:
+        None: This method does not return anything.
+    """
         super().__init__()
         self.train_csv = train_csv
         self.val_csv = val_csv
@@ -72,18 +218,57 @@ class CRNNDataModule(pl.LightningDataModule):
         
 
     def setup(self, stage=None):
+        """
+        Initializes the datasets for validation and testing.
+
+        Args:
+            self: The object instance.
+
+        Returns:
+            None
+        """
         self.train_dataset = CRNNDataset(self.train_csv, transform=self.train_transform, char_to_idx=self.char_to_idx)
         self.val_dataset = CRNNDataset(self.val_csv, transform=self.val_transform, char_to_idx=self.char_to_idx)
         self.test_dataset = CRNNTestDataset(self.test_csv, transform=self.val_transform)
 
     def train_dataloader(self):
+        """
+        Creates a data loader for training the model.
+
+        Args:
+            batch_size (int): The number of samples in each batch.
+            shuffle (bool): Whether to shuffle the data.
+            collate_fn (Callable): A function to collate the samples into batches.
+            num_workers (int): The number of subprocesses to use for data loading.
+
+        Returns:
+            None
+        """
         return DataLoader(self.train_dataset, batch_size=self.batch_size, shuffle=True,
                           collate_fn=crnn_collate_fn, num_workers=self.num_workers)
 
     def val_dataloader(self):
+        """
+        Returns a DataLoader for validation data.
+
+        Args:
+            self: The object instance.
+
+        Returns:
+            None
+        """
         return DataLoader(self.val_dataset, batch_size=self.batch_size, shuffle=False,
                           collate_fn=crnn_collate_fn, num_workers=self.num_workers)
 
     def test_dataloader(self):
+        """
+    Creates a test data loader.
+
+    Args:
+        self: The object instance.
+
+    Returns:
+        None
+    """
         return DataLoader(self.test_dataset, batch_size=self.batch_size, shuffle=False,
                           num_workers=self.num_workers)

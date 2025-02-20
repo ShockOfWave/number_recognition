@@ -7,6 +7,34 @@ from src.utils.decoding import decode_predictions_beam
 
 
 class CRNNInference:
+    """
+    A class for performing inference using a CRNN model.
+
+    Methods:
+    - __init__: Initializes the inference class.
+
+        Args:
+            checkpoint_path (str): Path to the Lightning model checkpoint.
+            img_size (tuple): Image size (imgH, imgW). Default is (128, 128).
+            beam_width (int): Beam search decoder width. Default is 10.
+            device (torch.device): Inference device. If None, automatically selected.
+
+    - predict_image: Performs prediction for an image at the specified path.
+
+        Args:
+            image_path (str): Path to the image.
+
+        Returns:
+            str: Predicted string (number).
+
+    - predict: Performs prediction for a PIL.Image object.
+
+        Args:
+            image (PIL.Image.Image): Image for prediction.
+
+        Returns:
+            str: Predicted string (number).
+    """
     def __init__(self, checkpoint_path, img_size=(128, 128), beam_width=10, device=None):
         """
         Инициализирует класс инференса.

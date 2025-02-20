@@ -9,6 +9,64 @@ from src.utils.metrics import levenshtein_distance
 
 
 class CRNNLightning(pl.LightningModule):
+    """
+    A class implementing a CRNN (Convolutional Recurrent Neural Network) model for image recognition tasks.
+
+    Methods:
+    - __init__:
+        Initialize the CRNN model with the specified parameters.
+        Args:
+            imgH (int): Height of the input image.
+            nc (int): Number of image channels (e.g., 3 for RGB).
+            nclass (int): Number of classes including the blank token.
+            nh (int): Number of hidden units in LSTM.
+            learning_rate (float): Learning rate for optimization.
+            blank (int): Index of the blank token.
+            idx_to_char (dict): Dictionary for decoding (index to character mapping).
+
+    - forward:
+        Perform a forward pass through the neural network model.
+        Args:
+            self (object): The neural network model object.
+            x (tensor): Input tensor to be passed through the model.
+        Returns:
+            None
+
+    - training_step:
+        Perform a single training step with the given batch data.
+        Args:
+            self: The object instance.
+            batch: Input batch data containing images, targets_concat, target_lengths, and label_strs.
+            batch_idx: Index of the current batch.
+        Returns:
+            dict: A dictionary containing training metrics.
+
+    - validation_step:
+        Computes the validation loss and metrics for the given batch.
+        Args:
+            self: The object instance.
+            batch: Batch of data for validation.
+            batch_idx: Index of the batch.
+        Returns:
+            dict: A dictionary containing validation loss and various metrics.
+
+    - test_step:
+        Perform a test step using the given batch data and index.
+        Args:
+            self: The object instance.
+            batch: Batch data for testing.
+            batch_idx: Index of the batch.
+        Returns:
+            None
+
+    - configure_optimizers:
+        Configures the optimizers for model training.
+        Parameters:
+            self: object
+                The instance of the class.
+        Returns:
+            None
+    """
     def __init__(self, imgH, nc, nclass, nh, learning_rate=1e-4, blank=0, idx_to_char=None):
         """
         imgH: высота изображения (например, 128)
@@ -30,9 +88,38 @@ class CRNNLightning(pl.LightningModule):
         self.idx_to_char = idx_to_char
 
     def forward(self, x):
+        """
+        Perform a forward pass through the neural network model.
+
+        Args:
+            self (object): The neural network model object.
+            x (tensor): The input tensor to be passed through the model.
+
+        Returns:
+            None
+        """
         return self.model(x)
 
     def training_step(self, batch, batch_idx):
+        """
+        Perform a single training step with the given batch data.
+
+        Args:
+            self: The object instance.
+            batch: The input batch data containing images, targets_concat, target_lengths, and label_strs.
+            batch_idx: The index of the current batch.
+
+        Returns:
+            dict: A dictionary containing the following training metrics -
+                - loss: The calculated loss value.
+                - train_image_acc: The accuracy of image predictions.
+                - train_image_prec: The precision of image predictions.
+                - train_image_rec: The recall of image predictions.
+                - train_image_f1: The F1 score of image predictions.
+                - train_digit_prec: The precision of digit predictions.
+                - train_digit_rec: The recall of digit predictions.
+                - train_digit_f1: The F1 score of digit predictions.
+        """
         images, targets_concat, target_lengths, label_strs = batch
         outputs = self(images)
         T, batch_size, _ = outputs.size()
@@ -99,6 +186,25 @@ class CRNNLightning(pl.LightningModule):
         }
 
     def validation_step(self, batch, batch_idx):
+        """
+        Computes the validation loss and metrics for the given batch.
+
+        Args:
+            self: The object instance.
+            batch: The batch of data for validation.
+            batch_idx: The index of the batch.
+
+        Returns:
+            dict: A dictionary containing the validation loss and various image and digit metrics.
+                - "val_loss": The validation loss computed using CTCLoss.
+                - "val_image_acc": The image accuracy for the batch.
+                - "val_image_prec": The image precision for the batch.
+                - "val_image_rec": The image recall for the batch.
+                - "val_image_f1": The image F1 score for the batch.
+                - "val_digit_prec": The digit precision for the batch.
+                - "val_digit_rec": The digit recall for the batch.
+                - "val_digit_f1": The digit F1 score for the batch.
+        """
         images, targets_concat, target_lengths, label_strs = batch
         outputs = self(images)
         outputs = outputs.log_softmax(2)
@@ -159,6 +265,17 @@ class CRNNLightning(pl.LightningModule):
         }
 
     def test_step(self, batch, batch_idx):
+        """
+        Perform a test step using the given batch data and index.
+
+        Args:
+            self: The object instance.
+            batch: The batch data for testing.
+            batch_idx: The index of the batch.
+
+        Returns:
+            None
+        """
         images, img_paths = batch
         outputs = self(images)
         outputs = outputs.log_softmax(2)
@@ -166,6 +283,16 @@ class CRNNLightning(pl.LightningModule):
         return {"img_paths": img_paths, "preds": decoded_preds}
 
     def configure_optimizers(self):
+        """
+    Configures the optimizers for the model training.
+
+    Parameters:
+        self: object
+            The instance of the class.
+
+    Returns:
+        None
+    """
         optimizer = optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=1e-4)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, mode="min", factor=0.5, patience=5, verbose=True

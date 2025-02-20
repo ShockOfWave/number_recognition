@@ -3,12 +3,60 @@ import torch.nn.functional as F
 
 
 class BidirectionalLSTM(nn.Module):
+    """
+    A class representing a Bidirectional LSTM model.
+
+    Class Methods:
+    - __init__: 
+        Initializes a BidirectionalLSTM object.
+
+        Args:
+            self: The object instance.
+            nIn (int): Number of input features.
+            nHidden (int): Number of hidden units in the LSTM layer.
+            nOut (int): Number of output features.
+
+        Returns:
+            None
+
+    - forward: 
+        Perform forward pass through the model.
+
+        Args:
+            self: The object instance.
+            input (torch.Tensor): The input tensor of shape (T, b, input_size).
+
+        Returns:
+            torch.Tensor: The output tensor after forward pass with shape (T, b, output_size).
+    """
     def __init__(self, nIn, nHidden, nOut):
+        """
+    Initializes a BidirectionalLSTM object.
+
+    Args:
+        self: The object instance.
+        nIn (int): Number of input features.
+        nHidden (int): Number of hidden units in the LSTM layer.
+        nOut (int): Number of output features.
+
+    Returns:
+        None
+    """
         super(BidirectionalLSTM, self).__init__()
         self.rnn = nn.LSTM(nIn, nHidden, bidirectional=True)
         self.embedding = nn.Linear(nHidden * 2, nOut)
 
     def forward(self, input):
+        """
+        Perform forward pass through the model.
+
+        Args:
+            self: The object instance.
+            input (torch.Tensor): The input tensor of shape (T, b, input_size).
+
+        Returns:
+            torch.Tensor: The output tensor after forward pass with shape (T, b, output_size).
+        """
         recurrent, _ = self.rnn(input)
         T, b, h = recurrent.size()
         t_rec = recurrent.view(T * b, h)
@@ -18,6 +66,24 @@ class BidirectionalLSTM(nn.Module):
 
 
 class CRNN(nn.Module):
+    """
+    A Convolutional Recurrent Neural Network (CRNN) for image-based sequence recognition.
+
+    Methods:
+    - __init__: Initialize the CRNN model with the specified parameters.
+        imgH: Height of the input image (e.g., 128)
+        nc: Number of image channels (3 for RGB)
+        nclass: Number of classes (digits + blank)
+        nh: Number of hidden units in LSTM
+
+    - forward: Perform a forward pass through the model.
+        Args:
+            self: The object instance.
+            x (Tensor): Input tensor of shape (T, B, n_features).
+
+        Returns:
+            None
+    """
     def __init__(self, imgH, nc, nclass, nh):
         """
         imgH: высота изображения (например, 128)
@@ -54,6 +120,16 @@ class CRNN(nn.Module):
         self.rnn = BidirectionalLSTM(1024, nh, nclass)
 
     def forward(self, x):
+        """
+        Perform a forward pass through the model.
+
+        Args:
+            self: The object instance.
+            x (Tensor): Input tensor of shape (T, B, n_features).
+
+        Returns:
+            None
+        """
         conv = self.cnn(x)
         conv = F.adaptive_avg_pool2d(conv, (1, conv.size(3)))  # (B, 1024, 1, W)
         conv = conv.squeeze(2)  # (B, 1024, W)

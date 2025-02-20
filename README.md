@@ -1,232 +1,215 @@
-# Распознавание Номеров с помощью CRNN
+<p align="center"><h1 align="center">NUMBER_RECOGNITION</h1></p>
+<p align="center">
+	<a href="https://itmo.ru/"><img src="https://raw.githubusercontent.com/aimclub/open-source-ops/43bb283758b43d75ec1df0a6bb4ae3eb20066323/badges/ITMO_badge.svg"></a>
+	<img src="https://img.shields.io/github/license/ShockOfWave/number_recognition?style=default&logo=opensourceinitiative&logoColor=white&color=blue" alt="license">
+	<a href="https://github.com/ITMO-NSS-team/Open-Source-Advisor"><img src="https://img.shields.io/badge/improved%20by-OSA-blue"></a>
+</p>
+<p align="center">Built with the tools and technologies:</p>
+<p align="center">
+	<img src="https://img.shields.io/badge/Jinja-B41717.svg?style=default&logo=Jinja&logoColor=white"alt="Jinja">
+	<img src="https://img.shields.io/badge/Jupyter-F37626.svg?style=default&logo=Jupyter&logoColor=white"alt="Jupyter">
+	<img src="https://img.shields.io/badge/scikitlearn-F7931E.svg?style=default&logo=scikit-learn&logoColor=white"alt="scikitlearn">
+	<img src="https://img.shields.io/badge/tqdm-FFC107.svg?style=default&logo=tqdm&logoColor=black"alt="tqdm">
+	<img src="https://img.shields.io/badge/Babel-F9DC3E.svg?style=default&logo=Babel&logoColor=black"alt="Babel">
+	<img src="https://img.shields.io/badge/SymPy-3B5526.svg?style=default&logo=SymPy&logoColor=white"alt="SymPy">
+	<img src="https://img.shields.io/badge/GNU%20Bash-4EAA25.svg?style=default&logo=GNU-Bash&logoColor=white"alt="GNU%20Bash">
+	<img src="https://img.shields.io/badge/FastAPI-009688.svg?style=default&logo=FastAPI&logoColor=white"alt="FastAPI">
+	<br>
+	<img src="https://img.shields.io/badge/NumPy-013243.svg?style=default&logo=NumPy&logoColor=white"alt="NumPy">
+	<img src="https://img.shields.io/badge/Docker-2496ED.svg?style=default&logo=Docker&logoColor=white"alt="Docker">
+	<img src="https://img.shields.io/badge/Python-3776AB.svg?style=default&logo=Python&logoColor=white"alt="Python">
+	<img src="https://img.shields.io/badge/AIOHTTP-2C5BB4.svg?style=default&logo=AIOHTTP&logoColor=white"alt="AIOHTTP">
+	<img src="https://img.shields.io/badge/SciPy-8CAAE6.svg?style=default&logo=SciPy&logoColor=white"alt="SciPy">
+	<img src="https://img.shields.io/badge/pandas-150458.svg?style=default&logo=pandas&logoColor=white"alt="pandas">
+	<img src="https://img.shields.io/badge/Lightning-792EE5.svg?style=default&logo=Lightning&logoColor=white"alt="Lightning">
+	<img src="https://img.shields.io/badge/Pydantic-E92063.svg?style=default&logo=Pydantic&logoColor=white"alt="Pydantic">
+</p>
+<br>
 
-![GitHub](https://img.shields.io/github/license/ShockOfWave/number_recognition)
-![GitHub last commit](https://img.shields.io/github/last-commit/ShockOfWave/number_recognition)
-![GitHub pull requests](https://img.shields.io/github/issues-pr/ShockOfWave/number_recognition)
-![contributors](https://img.shields.io/github/contributors/ShockOfWave/number_recognition) 
-![codesize](https://img.shields.io/github/languages/code-size/ShockOfWave/number_recognition)
-![GitHub repo size](https://img.shields.io/github/repo-size/ShockOfWave/number_recognition)
-![GitHub top language](https://img.shields.io/github/languages/top/ShockOfWave/number_recognition)
-![GitHub language count](https://img.shields.io/github/languages/count/ShockOfWave/number_recognition)
 
-Этот проект реализует CRNN (сверточно-рекуррентную нейронную сеть) для распознавания чисел (цифр) по изображениям. Модель построена на основе PyTorch и организована с использованием PyTorch Lightning для удобства обучения и оценки. Кроме того, проект предоставляет модуль инференса с классом `CRNNInference` и FastAPI-эндпоинтом, а также поддержку Docker для развертывания.
+---
+## Overview
 
-## Содержание
+<overview>
+numberrecognition is a software project focused on building, training, and deploying a deep learning model for image recognition. It provides a streamlined end-to-end process for developers to create, train, and serve image recognition models, offering a valuable tool for those working on deep learning and computer vision projects.
+</overview>
 
-- [Структура проекта](#структура-проекта)
-- [Особенности](#особенности)
-- [Требования](#требования)
-- [Установка](#установка)
-- [Обучение](#обучение)
-- [Инференс](#инференс)
-  - [Использование класса для инференса](#использование-класса-для-инференса)
-  - [FastAPI-эндпоинт](#fastapi-эндпоинт)
-- [Docker](#docker)
-- [Линтинг и качество кода](#лингтинг-и-качество-кода)
-- [Контакты](#контакты)
-- [Лицензия](#лицензия)
+---
 
-## Подробности по реализации проекта находятся в [документации](docs/README.md).
 
-## Структура проекта
+## Table of contents
 
-```
-number_recognition/
-├── Dockerfile
-├── app.py                 # FastAPI-эндпоинт
-├── train.py               # Скрипт для обучения (запуск: python main.py)
-├── inference.py           # Скрипт для инференса из командной строки (опционально)
-├── README.md
-├── requirements.txt
-└── src/
-    ├── data/
-    │   ├── __init__.py
-    │   └── dataset.py     # Датасеты и DataModule для обучения, валидации и теста
-    ├── models/
-    │   ├── __init__.py
-    │   ├── crnn.py        # Архитектура CRNN и Bidirectional LSTM
-    │   └── lightning_module.py  # Обёртка модели CRNN в LightningModule
-    ├── inference/
-    │   ├── __init__.py
-    │   └── inference.py   # Класс CRNNInference для инференса
-    └── utils/
-        ├── __init__.py
-        ├── decoding.py    # Функции beam search декодирования
-        └── metrics.py     # Вспомогательные функции (например, расстояние Левенштейна)
-```
+- [Core features](#core-features)
+- [Installation](#installation)
+- [Examples](#examples)
+- [Documentation](#documentation)
+- [Getting started](#getting-started)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
+- [Contacts](#contacts)
+- [Citation](#citation)
 
-## Особенности
+---
 
-- **Архитектура модели:**  
-  Мощная CRNN с увеличенным числом фильтров в сверточных слоях для распознавания цифр.
+## Core features
 
-- **Обучение:**  
-  Обучение модели через PyTorch Lightning с:
-  - Пользовательскими шагами обучения и валидации.
-  - Логированием метрик: 
-    - **На уровне изображения**: точность, precision, recall, F1-score для определения, правильно ли распознано число целиком.
-    - **На уровне цифр**: precision, recall, F1-score для распознавания отдельных цифр.
-  - Вычислением лосса на обучении и валидации.
-  - Планировщиком ReduceLROnPlateau для адаптивного уменьшения скорости обучения.
-  - Регуляризацией с использованием weight decay.
-  - Ранней остановкой (Early Stopping) и сохранением лучших весов (ModelCheckpoint).
+<corefeatures>
 
-- **Инференс:**  
-  Класс `CRNNInference` позволяет легко выполнять предсказание для отдельного изображения. Также реализован FastAPI-эндпоинт для получения предсказаний через REST API.
+1. **Deep Learning Model**: Codebase for building, training, and deploying a deep learning model.
+   
+2. **Containerization**: Utilizes Dockerfile for containerizing the application for deployment.
 
-- **Docker:**  
-  Проект содержит Dockerfile для сборки и развертывания контейнера с приложением.
+3. **Documentation and Package Management**: Primarily written in Python with dependencies managed using pip and Docker.
 
-- **Качество кода:**  
-  Рекомендуется использовать линтеры (flake8, black, isort, mypy) для проверки стиля и качества кода.
+4. **API Serving**: 'app.py' file serves the trained model as an API for predictions.
 
-## Требования
+5. **Exploratory Data Analysis**: Includes 'notebooks/eda.ipynb' for data exploration and analysis.
 
-Установите необходимые зависимости:
+</corefeatures>
 
-```bash
-pip install -r requirements.txt
+---
+
+
+## Installation
+
+Install number_recognition using one of the following methods:
+
+**Build from source:**
+
+1. Clone the number_recognition repository:
+```sh
+❯ git clone https://github.com/ShockOfWave/number_recognition
 ```
 
-Для разработки можно установить дополнительно:
-
-```
-flake8
-black
-isort
+2. Navigate to the project directory:
+```sh
+❯ cd number_recognition
 ```
 
-## Установка
+3. Install the project dependencies:
 
-1. **Клонируйте репозиторий:**
 
-   ```bash
-   git clone https://github.com/ShockOfWave/number_recognition.git
-   cd number_recognition
-   ```
+**Using `pip`** &nbsp;
+[<img align="center" src="https://img.shields.io/badge/Pip-3776AB.svg?style={badge_style}&logo=pypi&logoColor=white" />](https://pypi.org/project/pip/)
 
-2. **(Опционально) Создайте виртуальное окружение и активируйте его:**
-
-   ```bash
-   python -m venv venv
-   source venv/bin/activate   # Linux/MacOS
-   venv\Scripts\activate      # Windows
-   ```
-
-3. **Установите зависимости:**
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Скачайте данные и лучшую модель:**
-
-   ```bash
-   sh get_data_and_best_model.sh
-   ```
-
-## Обучение
-
-Запустите скрипт для обучения:
-
-```bash
-python train.py --use_wandb
+```sh
+❯ pip install -r requirements.txt
 ```
 
-- Параметр `--use_wandb` включает логирование в Weights & Biases (если настроено).
-- Скрипт `train.py` настраивает аугментации, обучающие параметры, коллбэки (Early Stopping и ModelCheckpoint) и сохраняет лучшую модель в папке `checkpoints/`.
 
-## Инференс
+**Using `docker`** &nbsp;
+[<img align="center" src="https://img.shields.io/badge/Docker-2CA5E0.svg?style={badge_style}&logo=docker&logoColor=white" />](https://www.docker.com/)
 
-### Использование класса для инференса
-
-Вы можете импортировать класс `CRNNInference` и использовать его для получения предсказания для отдельного изображения:
-
-```python
-from src.inference.inference import CRNNInference
-
-inference_engine = CRNNInference(checkpoint_path="checkpoints/best-checkpoint.ckpt")
-prediction = inference_engine.predict_image("test.jpg")
-print("Распознанное число:", prediction)
+```sh
+❯ docker build -t ShockOfWave/number_recognition .
 ```
 
-### FastAPI-эндпоинт
 
-Запустите FastAPI-эндпоинт (файл `app.py`):
 
-```bash
-python app.py
+---
+
+
+## Examples
+
+Examples of how this should work and how it should be used are available in [Not found any examples](https://github.com/ShockOfWave/number_recognition/tree/main/).
+
+---
+
+
+## Documentation
+
+A detailed number_recognition description is available in [docs](https://github.com/ShockOfWave/number_recognition/tree/main/docs).
+
+---
+
+
+## Getting started
+
+### Usage
+
+Run number_recognition using the following command:
+ 
+ **Using `pip`** &nbsp;
+[<img align="center" src="https://img.shields.io/badge/Pip-3776AB.svg?style={badge_style}&logo=pypi&logoColor=white" />](https://pypi.org/project/pip/)
+
+```sh
+❯ python {entrypoint}
 ```
 
-Пример запроса через curl:
 
-```bash
-curl -X POST "http://localhost:8000/predict" -F "file=@test.jpg"
+**Using `docker`** &nbsp;
+[<img align="center" src="https://img.shields.io/badge/Docker-2CA5E0.svg?style={badge_style}&logo=docker&logoColor=white" />](https://www.docker.com/)
+
+```sh
+❯ docker run -it {image_name}
 ```
 
-Ответ будет в формате JSON, например:
 
-```json
-{
-  "filename": "test.jpg",
-  "prediction": "12345"
-}
-```
-
-## Docker
-
-Чтобы собрать и запустить контейнер с приложением:
-
-1. **Соберите Docker-образ:**
-
-   ```bash
-   docker build -t crnn-app .
-   ```
-
-2. **Запустите контейнер:**
-
-   ```bash
-   docker run -p 8000:8000 crnn-app
-   ```
-
-Приложение будет доступно по адресу [http://localhost:8000](http://localhost:8000).
-
-## Линтинг и качество кода
-
-Для проверки качества кода выполните следующие команды:
-
-- **flake8:**
-
-  ```bash
-  flake8 src/ main.py
-  ```
-
-- **black (форматирование кода):**
-
-  ```bash
-  black src/ main.py
-  ```
-
-- **isort (сортировка импортов):**
-
-  ```bash
-  isort .
-  ```
+---
 
 
-## Запуск через Docker
+## Contributing
 
-Для сборки и запуска Docker-контейнера выполните:
 
-```bash
-docker build -t crnn-app .
-docker run -p 8000:8000 crnn-app
-```
+- **[Report Issues](https://github.com/ShockOfWave/number_recognition/issues )**: Submit bugs found or log feature requests for the number_recognition project.
 
-## Контакты
 
-Если у вас возникнут вопросы, пожалуйста, свяжитесь с автором проекта.
+---
 
-## Лицензия
 
-Этот проект распространяется под лицензией MIT. Подробности смотрите в файле [LICENSE](LICENSE).
+## License
+
+This project is protected under the MIT License. For more details, refer to the [LICENSE](https://github.com/ShockOfWave/number_recognition/blob/main/LICENSE) file.
+
+---
+
+
+## Acknowledgments
+
+- List any resources, contributors, inspiration, etc. here.
+
+---
+
+
+
+## Contacts
+
+Your contacts. For example:
+
+- [Telegram channel](https://t.me/) answering questions about your project
+- [VK group](<https://vk.com/>) your VK group
+- etc.
+
+---
+
+
+## Citation
+
+If you use this software, please cite it as below.
+
+### APA format:
+
+    ShockOfWave (2025). number_recognition repository [Computer software]. https://github.com/ShockOfWave/number_recognition
+
+### BibTeX format:
+
+    @misc{number_recognition,
+
+        author = {ShockOfWave},
+
+        title = {number_recognition repository},
+
+        year = {2025},
+
+        publisher = {github.com},
+
+        journal = {github.com repository},
+
+        howpublished = {\url{https://github.com/ShockOfWave/number_recognition.git}},
+
+        url = {https://github.com/ShockOfWave/number_recognition.git}
+
+    }
+
+---

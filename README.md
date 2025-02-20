@@ -31,7 +31,7 @@
 ## Overview
 
 <overview>
-numberrecognition is a software project focused on developing and deploying a deep learning model for image recognition. It provides end-to-end support for training, evaluating, and deploying the model, catering to users interested in leveraging deep learning for image recognition tasks.
+numberrecognition is a software project focused on developing, training, and deploying a deep learning model for image recognition. It streamlines the process of creating, training, and serving the model as an API, offering value to developers and data scientists working on image recognition tasks.
 </overview>
 
 ---
@@ -56,15 +56,15 @@ numberrecognition is a software project focused on developing and deploying a de
 
 <corefeatures>
 
-1. **Primary Language**: Python is the main language used in the project.
+1. **Deep Learning Model**: Includes training, prediction, and API serving functionalities.
    
-2. **Containerization**: Dockerfile is provided for containerizing the project for easy deployment.
+2. **Containerization**: Utilizes Docker for packaging the application.
 
-3. **Training and Inference**: Files like 'train.py' and 'src/inference/inference.py' handle model training and inference.
+3. **Dependency Management**: Utilizes pip and requirements.txt for managing project dependencies.
 
-4. **Documentation**: Various file types like 'txt', 'py', 'sh', 'toml', and 'ipynb' are used for documentation.
+4. **Exploratory Data Analysis**: Contains a Jupyter notebook for data exploration.
 
-5. **Installation Commands**: Installation via pip and docker is supported with clear commands provided.
+5. **Modular Architecture**: Organized codebase for developing, training, and deploying deep learning models.
 
 </corefeatures>
 
